@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Amethyst Miner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, #25103d 0%, #0a0613 60%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 4rem;
+      margin-bottom: 20px;
+      color: #c68cff;
+      text-shadow: 0 0 20px #9b4dff;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .label {
+      opacity: 0.7;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .big-value {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .exp-bar {
+      width: 100%;
+      height: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .exp-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #8a4dff, #d6a5ff);
+      transition: 0.4s;
+      box-shadow: 0 0 20px #8a4dff;
+    }
+
+    .mine-area {
+      position: relative;
+      text-align: center;
+      margin: 40px 0;
+      min-height: 420px;
+    }
+
+    .crystal {
+      width: 340px;
+      height: 340px;
+      object-fit: contain;
+      margin: auto;
+      display: block;
+      position: relative;
+      filter:
+        drop-shadow(0 0 25px #a55cff)
+        drop-shadow(0 0 60px #7b2fff);
+
+      user-select: none;
+      pointer-events: none;
+    }
+
+
+    .pickaxe {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      width: 170px;
+      height: 170px;
+      object-fit: contain;
+      transform: translateX(-50%) rotate(-25deg);
+      transform-origin: top center;
+      z-index: 10;
+      pointer-events: none;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .pickaxe.back {
+      animation: swingBack 0.12s ease-out forwards;
+    }
+
+    .pickaxe.hit {
+      animation: swingHit 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    .crystal.hit {
+      animation: shake 0.4s;
+    }
+
+    .mine-button {
+      margin-top: 30px;
+      border: none;
+      padding: 20px 60px;
+      border-radius: 20px;
+      font-size: 2rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #8a4dff, #b57cff);
+      color: white;
+      box-shadow: 0 0 30px rgba(155,77,255,0.5);
+      transition: 0.2s;
+    }
+
+    .mine-button:hover {
+      transform: scale(1.05);
+    }
+
+    .mine-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .drop-popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.4s;
+    }
+
+    .drop-card {
+      background: #150d22;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 40px;
+      text-align: center;
+      min-width: 320px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    }
+
+    .drop-icon {
+      font-size: 6rem;
+      margin-bottom: 20px;
+    }
+
+    .drop-name {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .drop-type {
+      font-size: 1.1rem;
+      opacity: 0.8;
+    }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .item-card {
+      background: rgba(255,255,255,0.04);
+      border-radius: 20px;
+      padding: 15px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .item-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .item-name {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .item-count {
+      opacity: 0.8;
+    }
+
+    .logs {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+
+    .log-day {
+      margin-bottom: 20px;
+    }
+
+    .log-date {
+      color: #d8b4ff;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .log-entry {
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      margin-bottom: 5px;
+      font-size: 0.95rem;
+    }
+
+    .rare {
+      color: #57a6ff;
+      text-shadow: 0 0 10px #57a6ff;
+    }
+
+    .artifact {
+      color: gold;
+      text-shadow: 0 0 20px gold;
+    }
+
+    .gem {
+      color: #ff69ff;
+      text-shadow: 0 0 15px #ff69ff;
+    }
+
+    .pickaxe-card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .pickaxe-card:hover {
+      transform: scale(1.03);
+    }
+
+    .pickaxe-card.locked {
+      opacity: 0.4;
+      cursor: not-allowed;
+      filter: grayscale(1);
+    }
+
+    .pickaxe-card.active {
+      border: 2px solid #c68cff;
+      box-shadow: 0 0 20px #9b4dff;
+    }
+
+    .pickaxe-card img {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .pickaxe-name {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .pickaxe-status {
+      opacity: 0.8;
+      font-size: 0.85rem;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes swing {
+      0% {transform: translateX(-50%) rotate(-25deg);}
+      40% {transform: translateX(-50%) rotate(65deg) translateY(40px);}
+      70% {transform: translateX(-50%) rotate(20deg) translateY(20px);}
+      100% {transform: translateX(-50%) rotate(-25deg);}
+  }
+    @keyframes swingBack {
+      0% {transform: translateX(-50%) rotate(-25deg);}
+      100% {transform: translateX(-50%) rotate(-55deg) translateY(-10px);}
+    }
+
+    @keyframes swingHit {
+      0% {transform: translateX(-50%) rotate(-55deg) translateY(-10px);}
+      100% {transform: translateX(-50%) rotate(35deg) translateY(80px);}
+    }
+    @media(max-width: 768px) {
+      .title {
+        font-size: 2.5rem;
+      }
+
+      .mine-button {
+        width: 100%;
+      }
+
+      .crystal {
+      width: 250px;
+      height: 250px;
+    }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="drop-popup" id="popup">
+    <div class="drop-card">
+      <div class="drop-icon" id="popupIcon">💎</div>
+      <div class="drop-name" id="popupName">Oggetto</div>
+      <div class="drop-type" id="popupType">Comune</div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="title">AMETHYST MINER</div>
+
+    <div class="top-grid">
+
+      <div class="panel">
+        <div class="label">LIVELLO</div>
+        <div class="big-value" id="levelText">0</div>
+      </div>
+
+      <div class="panel">
+        <div class="label">EXP</div>
+        <div id="expText">0 / 210</div>
+
+        <div class="exp-bar">
+          <div class="exp-fill" id="expFill"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="label">TENTATIVI OGGI</div>
+        <div class="big-value" id="attemptsText">70 / 70</div>
+      </div>
+
+      <div class="panel">
+        <div class="label">RESET</div>
+        <div class="big-value" id="resetText">19:00</div>
+      </div>
+
+    </div>
+
+    <div class="mine-area">
+      <img
+      src="assets/pickaxes/pickaxe_0.png"
+      class="pickaxe"
+      id="pickaxe">
+      <img
+      src="assets/crystals/crystal_0.png"
+      class="crystal"
+      id="crystal"
+>
+
+      <button class="mine-button" id="mineButton">
+        MINA
+      </button>
+    </div>
+
+    <div class="top-grid">
+
+      <div class="panel">
+        <div class="label">ULTIMO DROP</div>
+        <div id="lastDrop">Nessuno</div>
+      </div>
+
+      <div class="panel">
+        <div class="label">STATISTICHE</div>
+        <div>🔨 Totale Estrazioni: <span id="totalMines">0</span></div>
+        <div> 💎 Gemme Rare: <span id="totalGems">0</span></div>
+        <div>🥇 Artefatti: <span id="totalArtifacts">0</span></div>
+      </div>
+
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+      <div class="label">INVENTARIO</div>
+
+      <div class="inventory-grid" id="inventoryGrid"></div>
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+
+  <div class="label">CAMBIA PICCONE</div>
+
+  <div class="inventory-grid" id="pickaxeGrid"></div>
+
+  </div>
+
+    <div class="panel" style="margin-top:20px; margin-bottom:40px;">
+      <div class="label">REGISTRO ESTRAZIONI</div>
+
+      <div class="logs" id="logs"></div>
+    </div>
+
+  </div>
+<audio id="bgMusic"></audio>
+  <script>
+
+    const LEVELS = [210, 350, 490, 630, 770]; // EXP REQUIRED FOR LEVELUP, [210, 350, 490, 630, 770]
+
+    const NORMAL_DROPS = {
+      0: [
+        { name: 'Frammento Viola', icon: 'assets/items/normal/0/purple_fragment.png' },      //purple_fragment
+        { name: 'Polvere Arcana', icon: 'assets/items/normal/0/arcane_powder.png' },       //arcane_powder
+        { name: 'Scheggia d\'Ametista', icon: 'assets/items/normal/0/amethyst_shard.png' }, //amethyst_shard
+        { name: 'Roccia Cristallina', icon: 'assets/items/normal/0/crystalline_rock.png' },   //crystalline_rock
+      ],
+      1: [
+        { name: 'Nucleo Luminoso', icon: 'assets/items/normal/1/luminous_nucleus.png' },   //luminous_nucleus
+        { name: 'Prisma Grezzo', icon: 'assets/items/normal/1/raw_prism.png' },            //raw_prism
+        { name: 'Essenza Minerale', icon: 'assets/items/normal/1/mineral_essence.png' },   //mineral_essence
+        { name: 'Geode Mistica', icon: 'assets/items/normal/1/mystic_geode.png' },         //mystic_geode
+      ],
+      2: [
+        { name: 'Cristallo Puro', icon: 'assets/items/normal/2/pure_crystal.png' },     //pure_crystal
+        { name: 'Prisma Arcano', icon: 'assets/items/normal/2/arcane_prism.png' },     //arcane_prism
+        { name: 'Cuore Minerale', icon: 'assets/items/normal/2/mineral_heart.png' },    //mineral_heart
+        { name: 'Geode Antica', icon: 'assets/items/normal/2/ancient_geode.png' },       //ancient_geode
+      ],
+      3: [
+        { name: 'Prisma del Vuoto', icon: 'assets/items/normal/3/void_prism.png' },             //void_prism
+        { name: 'Frammento Nebulare', icon: 'assets/items/normal/3/nebular_fragment.png' },     //nebular_fragment
+        { name: 'Nucleo Ombra', icon: 'assets/items/normal/3/shadow_nucleus.png' },             //shadow_nucleus
+        { name: 'Polvere Stellare', icon: 'assets/items/normal/3/star_powder.png' },            //star_powder
+      ],
+      4: [
+        { name: 'Cristallo Celestiale', icon: 'assets/items/normal/4/celestial_crystal.png' },  //celestial_crystal
+        { name: 'Prisma Solare', icon: 'assets/items/normal/4/solar_prism.png' },               //solar_prism
+        { name: 'Essenza Cosmica', icon: 'assets/items/normal/4/cosmic_essence.png' },          //cosmic_essence
+        { name: 'Cuore Astrale', icon: 'assets/items/normal/4/astral_hearth.png' },             //astral_hearth
+      ],
+      5: [
+        { name: 'Cristallo Eterno', icon: 'assets/items/normal/5/eternal_crystal.png' },     //eternal_crystal
+        { name: 'Prisma Infinito', icon: 'assets/items/normal/5/infinite_prism.png' },      //infinite_prism
+        { name: 'Essenza Suprema', icon: 'assets/items/normal/5/supreme_essence.png' },      //supreme_essence
+        { name: 'Nucleo Universale', icon: 'assets/items/normal/5/universal_nucleus.png' },    //universal_nucleus
+      ]
+    };
+
+    const GEMS = [
+      { name: 'Rubino', icon: 'assets/items/gems/ruby.png' },   //ruby
+      { name: 'Topazio', icon: 'assets/items/gems/topaz.png' },  //topaz
+      { name: 'Ambra', icon: 'assets/items/gems/amber.png' },    //amber
+      { name: 'Giada', icon: 'assets/items/gems/jade.png' },    //jade
+      { name: 'Zaffiro', icon: 'assets/items/gems/sapphire.png' },  //sapphire
+      { name: 'Tanzanite', icon: 'assets/items/gems/tanzanite.png' }, //tanzanite
+    ];
+
+    const ARTIFACTS = [
+      { name: 'Corona del Vuoto', icon: 'assets/items/artifacts/void_crown.png' },              //void_crown
+      { name: 'Calice Astrale', icon: 'assets/items/artifacts/astral_chalice.png' },            //astral_chalice
+      { name: 'Scettro Eterno', icon: 'assets/items/artifacts/eternal_scepter.png' },           //eternal_scepter
+      { name: 'Occhio di Eternium', icon: 'assets/items/artifacts/eternium_eye.png' },          //eternium_eye
+      { name: 'Cubo Primordiale', icon: 'assets/items/artifacts/primordial_cube.png' },         //primordial_cube
+      { name: 'Elmo Astrale Supremo', icon: 'assets/items/artifacts/supreme_astral_helm.png' }, //supreme_astral_helm
+    ];
+
+      const PICKAXES = [
+    {
+      id: 0,
+      name: 'Piccone di Legno',
+      image: 'assets/pickaxes/pickaxe_0.png',
+      unlockLevel: 0
+    },
+
+    {
+      id: 1,
+      name: 'Piccone di Pietra',
+      image: 'assets/pickaxes/pickaxe_1.png',
+      unlockLevel: 1
+    },
+
+    {
+      id: 2,
+      name: 'Piccone di Ferro',
+      image: 'assets/pickaxes/pickaxe_2.png',
+      unlockLevel: 2
+    },
+
+    {
+      id: 3,
+      name: 'Piccone d\'Oro',
+      image: 'assets/pickaxes/pickaxe_3.png',
+      unlockLevel: 3
+    },
+
+    {
+      id: 4,
+      name: 'Piccone di Diamante',
+      image: 'assets/pickaxes/pickaxe_4.png',
+      unlockLevel: 4
+    },
+
+    {
+      id: 5,
+      name: 'Piccone di Ametista',
+      image: 'assets/pickaxes/pickaxe_5.png',
+      unlockLevel: 5
+    },
+    { // LIMITED TIME EVENT
+      id: 6,
+      name: 'Piccone Estivo [LIMITED]',
+      image: 'assets/pickaxes/pickaxe_summer_event.png',
+      eventStart: '2026-05-08', // EVENT START: YEAR-MONTH-DAY
+      eventEnd: '2026-08-31'    // EVENT END
+    }
+];
+    const CRYSTALS = [
+      'assets/crystals/crystal_0.png',
+      'assets/crystals/crystal_1.png',
+      'assets/crystals/crystal_2.png',
+      'assets/crystals/crystal_3.png',
+      'assets/crystals/crystal_4.png',
+      'assets/crystals/crystal_5.png'
+    ];
+    let game = {
+      level: 0,
+      exp: 0,
+      attempts: 70,
+      inventory: {},
+      totalMines: 0,
+      totalGems: 0,
+      totalArtifacts: 0,
+      logs: {},
+      lastReset: null,
+      lastDrop: 'Nessuno',
+      currentPickaxe: 0
+    };
+
+    function saveGame() {
+      localStorage.setItem('crystalMinerSave', JSON.stringify(game));
+    }
+
+    function loadGame() {
+      const save = localStorage.getItem('crystalMinerSave');
+
+      if(save) {
+        game = JSON.parse(save);
+      }
+    }
+
+    function getTodayKey() {
+      const d = new Date();
+      return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    }
+
+    function checkReset() {
+      const now = new Date();
+      const todayReset = new Date();
+      const resetHour = 19; // Hour at which reset occours
+      const resetMinutes = 0; // Minutes at which reset occours
+      todayReset.setHours(resetHour,resetMinutes,0,0);
+
+      const lastReset = game.lastReset ? new Date(game.lastReset) : null;
+
+      if(!lastReset) {
+        game.lastReset = now.toISOString();
+        saveGame();
+        return;
+      }
+
+      if(now >= todayReset && lastReset < todayReset) {
+        game.attempts = 70;
+        game.lastReset = now.toISOString();
+        saveGame();
+      }
+    }
+
+    function updateUI() {
+
+      document.getElementById('levelText').innerText =
+        game.level >= 5 ? 'MAX' : game.level;
+
+      const required = LEVELS[Math.min(game.level, 4)];
+
+      document.getElementById('expText').innerText =
+        game.level >= 5
+          ? 'MAX LEVEL'
+          : `${game.exp} / ${required}`;
+
+      const fill = game.level >= 5
+        ? 100
+        : (game.exp / required) * 100;
+
+      document.getElementById('expFill').style.width = fill + '%';
+
+      document.getElementById('attemptsText').innerText =
+        `${game.attempts} / 70`;
+
+      const last = game.lastDrop;
+
+    const lastDropEl = document.getElementById('lastDrop');
+    if (!last || !last.name) {
+      lastDropEl.innerText = "Mina per scoprire il tuo primo tesoro...";
+      return;
+    } else {
+      const last = game.lastDrop;
+      lastDropEl.className = '';
+    if (last.type === 'Gemma') {
+      lastDropEl.classList.add('gem');
+    }
+    if (last.type === 'Artefatto') {
+      lastDropEl.classList.add('artifact');
+    }
+    lastDropEl.innerHTML = `
+      ${
+        last.icon && last.icon.startsWith('assets')
+          ? `<img src="${last.icon}" width="20" height="20" style="vertical-align:middle;">`
+          : last.icon
+      }
+      ${last.name}
+    `;
+}
+      document.getElementById('totalMines').innerText = game.totalMines;
+      document.getElementById('totalGems').innerText = game.totalGems;
+      document.getElementById('totalArtifacts').innerText = game.totalArtifacts;
+
+      renderInventory();
+      renderLogs();
+      renderPickaxes();
+      updatePickaxe();
+      updateCrystal();
+    }
+
+    function renderInventory() {
+      const grid = document.getElementById('inventoryGrid');
+      grid.innerHTML = '';
+
+      const entries = Object.entries(game.inventory)
+        .sort((a,b) => b[1].count - a[1].count);
+
+      entries.forEach(([name, item]) => {
+
+        const div = document.createElement('div');
+        div.className = 'item-card';
+        if(item.type === 'Gemma') {
+          div.classList.add('gem');
+        }
+
+        if(item.type === 'Artefatto') {
+          div.classList.add('artifact');
+        }
+
+        div.innerHTML = `
+          <div class="item-icon">
+  ${item.icon.startsWith('assets')
+    ? `<img src="${item.icon}" width="50" height="50">`
+    : item.icon}
+</div>
+          <div class="item-name">${name}</div>
+          <div class="item-count">x${item.count}</div>
+        `;
+
+        grid.appendChild(div);
+      });
+    }
+  function renderPickaxes() {
+    const grid = document.getElementById('pickaxeGrid');
+    grid.innerHTML = '';
+    PICKAXES.forEach(pickaxe => {
+    let unlocked = false;
+
+      const now = new Date();
+
+      // PICCONE EVENTO
+      if (pickaxe.eventStart && pickaxe.eventEnd) {
+
+        const start = new Date(pickaxe.eventStart);
+        const end = new Date(pickaxe.eventEnd);
+
+        unlocked = now >= start && now <= end;
+      }
+
+      // PICCONE NORMALE
+      else {
+        unlocked = game.level >= pickaxe.unlockLevel;
+      }
+      const div = document.createElement('div');
+      div.className = 'pickaxe-card';
+      if (!unlocked) {
+        div.classList.add('locked');
+      }
+      if (game.currentPickaxe === pickaxe.id) {
+        div.classList.add('active');
+      }
+      div.innerHTML = `
+        <img src="${pickaxe.image}">
+        <div class="pickaxe-name">
+          ${pickaxe.name}
+        </div>
+        <div class="pickaxe-status">
+        ${unlocked
+          ? 'Sbloccato'
+          : pickaxe.eventStart
+            ? 'Evento Estivo'
+            : `Livello ${pickaxe.unlockLevel}`
+        }
+      </div>
+      `;
+
+      if (unlocked) {
+        div.addEventListener('click', () => {
+          game.currentPickaxe = pickaxe.id;
+          updatePickaxe();
+          saveGame();
+          updateUI();
+        });
+      }
+      grid.appendChild(div);
+    });
+  }
+
+  function updatePickaxe() {
+    const pickaxeElement = document.getElementById('pickaxe');
+    const current = PICKAXES.find(
+      p => p.id === game.currentPickaxe
+    );
+    if (!current) return;
+    pickaxeElement.src = current.image;
+  }
+    function updateCrystal() {
+      const crystal = document.getElementById('crystal');
+      const crystalImage =
+      CRYSTALS[Math.min(game.level, CRYSTALS.length - 1)];
+      crystal.src = crystalImage;
+  }
+    function renderLogs() {
+      const logs = document.getElementById('logs');
+      logs.innerHTML = '';
+
+      const days = Object.keys(game.logs).reverse();
+
+      days.forEach(day => {
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'log-day';
+
+        const date = document.createElement('div');
+        date.className = 'log-date';
+        date.innerText = day;
+
+        wrapper.appendChild(date);
+
+        game.logs[day].slice().reverse().forEach(entry => {
+
+          const div = document.createElement('div');
+          div.className = 'log-entry';
+
+          if(entry.type === 'Gemma') div.classList.add('gem');
+          if(entry.type === 'Artefatto') div.classList.add('artifact');
+
+let icon = entry.icon || '';
+
+div.innerHTML = `
+  ${
+    typeof icon === 'string' && icon.startsWith('assets')
+      ? `<img src="${icon}" width="20" height="20" style="vertical-align:middle;">`
+      : icon
+  }
+  ${entry.name} (${entry.type})
+`;
+
+          wrapper.appendChild(div);
+        });
+
+        logs.appendChild(wrapper);
+      });
+    }
+
+    function addInventory(item, type) {
+      if(!game.inventory[item.name]) {
+        game.inventory[item.name] = {
+          count: 0,
+          icon: item.icon,
+          type: type
+        };
+      }
+      game.inventory[item.name].count++;
+    }
+
+    function addLog(item, type) {
+      const key = getTodayKey();
+
+      if(!game.logs[key]) {
+        game.logs[key] = [];
+      }
+
+      game.logs[key].push({
+        name: item.name,
+        icon: item.icon,
+        type
+      });
+    }
+
+    function levelCheck() {
+      while(game.level < 5 && game.exp >= LEVELS[game.level]) {
+        game.exp -= LEVELS[game.level];
+        game.level++;
+      }
+    }
+
+    function showPopup(item, type) {
+
+      const popup = document.getElementById('popup');
+      const name = document.getElementById('popupName');
+      const icon = document.getElementById('popupIcon');
+      const kind = document.getElementById('popupType');
+
+      popup.style.display = 'flex';
+
+      icon.innerText = item.icon;
+      name.innerText = item.name;
+      kind.innerText = type;
+      icon.innerHTML = item.icon.startsWith('assets')
+  ? `<img src="${item.icon}" width="120" height="120">`
+  : item.icon;
+
+      name.className = 'drop-name';
+      if(type === 'Gemma') {
+        name.classList.add('gem');
+      }
+      if(type === 'Artefatto') {
+        name.classList.add('artifact');
+      }
+      let duration = 1000; // default
+      if (type === 'Gemma') {
+        duration = 3000;
+      }
+      if (type === 'Artefatto') {
+        duration = 4000;
+      }
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, duration);
+    }
+
+    function rollDrop() {
+      const chanceArtifact = 10000; //standard value = 10'000
+
+      const artifactRoll = Math.floor(Math.random() * chanceArtifact);
+
+      if(artifactRoll === 0) {
+        const item = ARTIFACTS[Math.floor(Math.random() * ARTIFACTS.length)];
+
+        game.totalArtifacts++;
+        return {
+          item,
+          type: 'Artefatto'
+        };
+      }
+      const chanceGem = 2000 //standard value = 2'000
+      const gemRoll = Math.floor(Math.random() * chanceGem);
+
+      if(gemRoll === 0) {
+        const item = GEMS[Math.floor(Math.random() * GEMS.length)];
+
+        game.totalGems++;
+
+        return {
+          item,
+          type: 'Gemma'
+        };
+      }
+
+      const pool = NORMAL_DROPS[game.level];
+      const item = pool[Math.floor(Math.random() * pool.length)];
+
+      return {
+        item,
+        type: 'Normale'
+      };
+    }
+
+    async function mine() {
+
+      if(game.attempts <= 0) {
+        alert('Hai terminato i tentativi di oggi! Torna domani');
+        return;
+      }
+
+      const btn = document.getElementById('mineButton');
+      const pickaxe = document.getElementById('pickaxe');
+      const crystal = document.getElementById('crystal');
+
+      btn.disabled = true;
+
+    pickaxe.classList.remove('hit');
+pickaxe.classList.remove('back');
+
+// STEP 1: carica swing indietro
+pickaxe.classList.add('back');
+
+await new Promise(r => setTimeout(r, 120));
+
+// STEP 2: colpo vero
+pickaxe.classList.remove('back');
+pickaxe.classList.add('hit');
+
+// shake cristallo
+crystal.classList.add('hit');
+
+await new Promise(r => setTimeout(r, 250));
+
+// reset
+pickaxe.classList.remove('hit');
+crystal.classList.remove('hit');
+      crystal.classList.remove('hit');
+
+      const result = rollDrop();
+
+      game.attempts--;
+      game.exp++;
+      game.totalMines++;
+
+      game.lastDrop = {
+        ...result.item,
+      type: result.type
+      };
+
+      addInventory(result.item, result.type);
+      addLog(result.item, result.type);
+
+      levelCheck();
+
+      showPopup(result.item, result.type);
+
+      saveGame();
+      updateUI();
+
+      setTimeout(() => {
+        btn.disabled = false;
+      }, 700);
+    }
+
+    document.getElementById('mineButton')
+      .addEventListener('click', mine);
+
+    loadGame();
+    checkReset();
+    updateUI();
+    const MUSIC_TRACKS = [
+  'assets/music/Archive Lanterns.mp3',
+  'assets/music/Archive Lanterns 2.mp3'
+];
+
+const bgMusic = document.getElementById('bgMusic');
+
+let currentTrack = 0;
+
+bgMusic.volume = 0.3;
+
+// carica prima traccia
+bgMusic.src = MUSIC_TRACKS[currentTrack];
+
+// quando finisce
+bgMusic.addEventListener('ended', () => {
+
+  currentTrack++;
+
+  // ritorna alla prima
+  if (currentTrack >= MUSIC_TRACKS.length) {
+    currentTrack = 0;
+  }
+
+  bgMusic.src = MUSIC_TRACKS[currentTrack];
+
+  bgMusic.play();
+});
+
+// autoplay dopo primo click
+document.addEventListener('click', () => {
+  bgMusic.play();
+}, { once: true });
+    setInterval(() => {
+    checkReset();
+    updateUI();
+}, 30000);
+  </script>
+
+</body>
+</html>
