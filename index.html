@@ -295,6 +295,14 @@
       opacity: 0.8;
       font-size: 0.85rem;
     }
+    .volume-mini {
+      margin-top: 10px;
+    }
+    #volumeSlider {
+      width: 100%;
+      margin-top: 10px;
+      cursor: pointer;
+    }
 
     @keyframes float {
       0%,100% { transform: translateY(0px); }
@@ -384,7 +392,10 @@
         <div class="label">RESET</div>
         <div class="big-value" id="resetText">19:00</div>
       </div>
-
+      <div class="volume-mini">
+        <div class="label">VOLUME MUSICA</div>
+        <input type="range" id="volumeSlider" min="0" max="100" value="30">
+      </div>
     </div>
 
     <div class="mine-area">
@@ -991,10 +1002,17 @@ crystal.classList.remove('hit');
 ];
 
 const bgMusic = document.getElementById('bgMusic');
+const volumeSlider = document.getElementById('volumeSlider');
+volumeSlider.value = 30;
+
+function setVolume(value) {
+  bgMusic.volume = value / 100;
+}
+setVolume(volumeSlider.value);
 
 let currentTrack = 0;
 
-bgMusic.volume = 0.3;
+bgMusic.volume = volumeSlider.value / 100;
 
 // carica prima traccia
 bgMusic.src = MUSIC_TRACKS[currentTrack];
@@ -1016,8 +1034,13 @@ bgMusic.addEventListener('ended', () => {
 
 // autoplay dopo primo click
 document.addEventListener('click', () => {
+  setVolume(volumeSlider.value);
   bgMusic.play();
 }, { once: true });
+
+volumeSlider.addEventListener('input', (e) => {
+  setVolume(e.target.value);
+});
     setInterval(() => {
     checkReset();
     updateUI();
