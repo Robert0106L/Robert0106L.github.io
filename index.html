@@ -605,8 +605,8 @@
     function checkReset() {
       const now = new Date();
       const todayReset = new Date();
-      const resetHour = 9; // Hour at which reset occours
-      const resetMinutes = 45; // Minutes at which reset occours
+      const resetHour = 19; // Hour at which reset occours
+      const resetMinutes = 0; // Minutes at which reset occours
       todayReset.setHours(resetHour,resetMinutes,0,0);
 
       const lastReset = game.lastReset ? new Date(game.lastReset) : null;
