@@ -602,27 +602,39 @@
       return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
     }
 
-    function checkReset() {
-      const now = new Date();
-      const todayReset = new Date();
-      const resetHour = 19; // Hour at which reset occours
-      const resetMinutes = 0; // Minutes at which reset occours
-      todayReset.setHours(resetHour,resetMinutes,0,0);
-
-      const lastReset = game.lastReset ? new Date(game.lastReset) : null;
-
-      if(!lastReset) {
-        game.lastReset = now.toISOString();
-        saveGame();
-        return;
-      }
-
-      if(now >= todayReset && lastReset < todayReset) {
-        game.attempts = 70;
-        game.lastReset = now.toISOString();
-        saveGame();
-      }
+  function checkReset() {
+    const now = new Date();
+  
+    const resetHour = 19;
+    const resetMinutes = 0;
+  
+    // crea reset di OGGI
+    const todayReset = new Date();
+    todayReset.setHours(resetHour, resetMinutes, 0, 0);
+  
+    // crea reset di IERI
+    const yesterdayReset = new Date(todayReset);
+    yesterdayReset.setDate(yesterdayReset.getDate() - 1);
+  
+    // determina qual è l'ULTIMO reset valido
+    const lastValidReset = now >= todayReset ? todayReset : yesterdayReset;
+  
+    const lastReset = game.lastReset ? new Date(game.lastReset) : null;
+  
+    // primo avvio
+    if (!lastReset) {
+      game.lastReset = now.toISOString();
+      saveGame();
+      return;
     }
+  
+    // SE non hai ancora ricevuto questo reset → applicalo
+    if (lastReset < lastValidReset) {
+      game.attempts = 70;
+      game.lastReset = now.toISOString();
+      saveGame();
+    }
+}
 
     function updateUI() {
 
